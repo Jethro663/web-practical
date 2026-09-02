@@ -1,122 +1,72 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useState } from "react";
+import TrackForm from "./components/TrackForm";
+import TrackTable from "./components/TrackTable";
+import TrackDetail from "./components/TrackDetail";
 
-function App() {
-  const [count, setCount] = useState(0)
+const GENRES = ["All", "Pop", "Rock", "Indie", "Jazz"];
+
+export default function App() {
+  const [tracks, setTracks] = useState([]);
+  const [selectedId, setSelectedId] = useState(null);
+  const [view, setView] = useState("form"); // dynamic conditional view: "form" | "registry"
+  const [genreFilter, setGenreFilter] = useState("All"); // filter control (Phase 3)
+
+  function handleAddTrack(newTrack) {
+    setTracks((prev) => [...prev, newTrack]);
+    setView("registry"); // jump to table view right after submitting
+  }
+
+  const visibleTracks =
+    genreFilter === "All" ? tracks : tracks.filter((t) => t.genre === genreFilter);
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
+    <div className="min-h-screen bg-neutral-100 py-10 px-4">
+      <h1 className="text-2xl font-bold text-center text-neutral-800 mb-6">
+        Super Spotify Track Playlist Manager
+      </h1>
+
+      {/* Conditional view toggle */}
+      <div className="flex justify-center gap-2 mb-8">
         <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
+          onClick={() => setView("form")}
+          className={`px-4 py-2 rounded text-sm font-medium ${
+            view === "form" ? "bg-green-600 text-white" : "bg-white text-neutral-600 border"
+          }`}
         >
-          Count is {count}
+          Add Track
         </button>
-      </section>
+        <button
+          onClick={() => setView("registry")}
+          className={`px-4 py-2 rounded text-sm font-medium ${
+            view === "registry" ? "bg-green-600 text-white" : "bg-white text-neutral-600 border"
+          }`}
+        >
+          Registry ({tracks.length})
+        </button>
+      </div>
 
-      <div className="ticks"></div>
+      {view === "form" && <TrackForm onAddTrack={handleAddTrack} />}
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+      {view === "registry" && (
+        <div className="max-w-3xl mx-auto space-y-4">
+          {/* Filter control */}
+          <div className="flex items-center gap-2 text-sm">
+            <label className="text-neutral-600 font-medium">Filter by genre:</label>
+            <select
+              value={genreFilter}
+              onChange={(e) => setGenreFilter(e.target.value)}
+              className="border rounded px-2 py-1"
+            >
+              {GENRES.map((g) => (
+                <option key={g} value={g}>{g}</option>
+              ))}
+            </select>
+          </div>
+
+          <TrackTable tracks={visibleTracks} selectedId={selectedId} onSelectRow={setSelectedId} />
+          <TrackDetail tracks={tracks} selectedId={selectedId} />
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      )}
+    </div>
+  );
 }
-
-export default App
